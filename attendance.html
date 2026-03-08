@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance - invoicify now</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/3.0.3/plotly.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar { transition: all 0.3s ease; }
+        .sidebar.collapsed { transform: translateX(-100%); }
+        .main-content { transition: all 0.3s ease; }
+        .main-content.expanded { margin-left: 0; }
+        .attendance-card { transition: all 0.3s ease; }
+        .attendance-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .status-present { background-color: #dcfce7; color: #166534; }
+        .status-late { background-color: #fef3c7; color: #92400e; }
+        .status-absent { background-color: #fee2e2; color: #991b1b; }
+        .status-half-day { background-color: #e0f2fe; color: #0c4a6e; }
+        .qr-scanner { border: 3px dashed #6366f1; border-radius: 1rem; padding: 2rem; text-align: center; }
+        .scanning { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .qr-code { width: 200px; height: 200px; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="white"/><rect x="10" y="10" width="20" height="20" fill="black"/><rect x="70" y="10" width="20" height="20" fill="black"/><rect x="10" y="70" width="20" height="20" fill="black"/><rect x="30" y="30" width="10" height="10" fill="black"/><rect x="60" y="60" width="10" height="10" fill="black"/></svg>') center/contain no-repeat; margin: 0 auto; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <button id="sidebar-toggle" class="text-gray-500 hover:text-gray-700 mr-4">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-2xl font-bold text-indigo-600">invoicify now</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button class="text-gray-500 hover:text-gray-700 relative">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <button id="user-menu" class="flex items-center space-x-2 text-gray-700 hover:text-gray-900">
+                            <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-indigo-600 text-sm"></i>
+                            </div>
+                            <span id="user-name" class="font-medium">Admin User</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2">
+                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</a>
+                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Settings</a>
+                            <hr class="my-2">
+                            <a href="login.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar fixed left-0 top-16 h-full w-64 bg-white shadow-lg z-30">
+        <div class="p-4">
+            <div class="mb-6">
+                <div class="flex items-center space-x-3 p-3 bg-indigo-50 rounded-lg">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div>
+                        <h3 id="sidebar-user-name" class="font-semibold text-gray-900">Admin User</h3>
+                        <p id="sidebar-user-role" class="text-xs text-gray-500">Administrator</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="dashboard.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <div id="admin-menu" class="space-y-2">
+                    <a href="invoices.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-receipt"></i>
+                        <span>Invoices</span>
+                    </a>
+                    <a href="customers.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-users"></i>
+                        <span>Customers</span>
+                    </a>
+                    <a href="inventory.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-boxes"></i>
+                        <span>Inventory</span>
+                    </a>
+                    <a href="employees.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-users-cog"></i>
+                        <span>Employees</span>
+                    </a>
+                    <a href="attendance.html" class="flex items-center space-x-3 p-3 bg-indigo-100 text-indigo-700 rounded-lg">
+                        <i class="fas fa-clock"></i>
+                        <span>Attendance</span>
+                    </a>
+                    <a href="activity-log.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-history"></i>
+                        <span>Activity Log</span>
+                    </a>
+                </div>
+                <div id="employee-menu" class="space-y-2 hidden">
+                    <a href="attendance.html" class="flex items-center space-x-3 p-3 bg-indigo-100 text-indigo-700 rounded-lg">
+                        <i class="fas fa-clock"></i>
+                        <span>My Attendance</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" class="main-content pt-16 ml-64">
+        <div class="p-6">
+            <!-- Page Header -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Attendance Management</h1>
+                    <p class="text-gray-600">Track employee attendance and manage time records</p>
+                </div>
+                <div class="flex space-x-4" id="admin-actions">
+                    <button id="admin-mark-btn" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors shadow-lg">
+                        <i class="fas fa-user-check mr-2"></i>Mark for Employee
+                    </button>
+                    <button id="generate-qr-btn" class="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors shadow-lg">
+                        <i class="fas fa-qrcode mr-2"></i>Generate QR Code
+                    </button>
+                </div>
+            </div>
+
+            <!-- Attendance Options -->
+            <div id="attendance-options" class="bg-white rounded-xl p-6 shadow-lg mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Choose Attendance Method</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div id="admin-method" class="border-2 border-gray-200 rounded-lg p-6 cursor-pointer hover:border-indigo-500 transition-colors">
+                        <div class="text-center">
+                            <i class="fas fa-user-tie text-4xl text-indigo-600 mb-4"></i>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-2">Admin Entry</h4>
+                            <p class="text-gray-600">Admin marks attendance for employees</p>
+                        </div>
+                    </div>
+                    <div id="qr-method" class="border-2 border-gray-200 rounded-lg p-6 cursor-pointer hover:border-indigo-500 transition-colors">
+                        <div class="text-center">
+                            <i class="fas fa-qrcode text-4xl text-purple-600 mb-4"></i>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-2">QR Code Scan</h4>
+                            <p class="text-gray-600">Employees scan QR code to mark attendance</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR Code Scanner (Hidden by default) -->
+            <div id="qr-scanner-section" class="bg-white rounded-xl p-6 shadow-lg mb-8 hidden">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">QR Code Attendance</h3>
+                <div class="text-center">
+                    <div class="qr-scanner mb-6">
+                        <div class="qr-code mb-4"></div>
+                        <p class="text-gray-600 mb-4">Scan this QR code with your mobile app to mark attendance</p>
+                        <div id="scan-status" class="text-sm text-gray-500">Ready to scan...</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button id="clock-in-btn" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Clock In
+                        </button>
+                        <button id="clock-out-btn" class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Clock Out
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Today's Attendance Summary -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-600 mb-2" id="present-count">0</div>
+                        <div class="text-sm text-gray-600">Present</div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-yellow-600 mb-2" id="late-count">0</div>
+                        <div class="text-sm text-gray-600">Late</div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-red-600 mb-2" id="absent-count">0</div>
+                        <div class="text-sm text-gray-600">Absent</div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-blue-600 mb-2" id="half-day-count">0</div>
+                        <div class="text-sm text-gray-600">Half Day</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Records -->
+            <div class="bg-white rounded-xl p-6 shadow-lg mb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Recent Attendance Records</h3>
+                    <div class="flex space-x-2">
+                        <input type="date" id="date-filter" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                        <button id="refresh-records" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-refresh"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="attendance-records" class="space-y-4">
+                    <!-- Attendance records will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Attendance Analytics -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Weekly Attendance Trend</h3>
+                    <div id="attendance-chart" style="height: 300px;"></div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Late Arrivals This Month</h3>
+                    <div id="late-chart" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        const user = JSON.parse(localStorage.getItem('invoicifyUser'));
+        if (!user) {
+            window.location.href = 'login.html';
+        }
+
+        // Update user info
+        document.getElementById('user-name').textContent = user.name;
+        document.getElementById('sidebar-user-name').textContent = user.name;
+        document.getElementById('sidebar-user-role').textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+
+        // Role-based UI
+        if (user.role === 'employee') {
+            document.getElementById('admin-actions').style.display = 'none';
+            document.getElementById('attendance-options').style.display = 'none';
+            document.getElementById('qr-scanner-section').classList.remove('hidden');
+        }
+
+        // Sample attendance data
+        let attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords') || '[]');
+        let employees = JSON.parse(localStorage.getItem('employees') || '[]');
+
+        // Initialize sample data if empty
+        if (attendanceRecords.length === 0) {
+            const today = new Date().toISOString().split('T')[0];
+            attendanceRecords = [
+                {
+                    id: 1,
+                    employeeId: 'EMP-001',
+                    employeeName: 'Rajesh Sharma',
+                    date: today,
+                    clockIn: '09:15',
+                    clockOut: '18:30',
+                    status: 'late',
+                    hoursWorked: 9.25,
+                    lateCount: 1
+                },
+                {
+                    id: 2,
+                    employeeId: 'EMP-002',
+                    employeeName: 'Priya Patel',
+                    date: today,
+                    clockIn: '08:55',
+                    clockOut: '18:00',
+                    status: 'present',
+                    hoursWorked: 9.08,
+                    lateCount: 0
+                },
+                {
+                    id: 3,
+                    employeeId: 'EMP-003',
+                    employeeName: 'Amit Kumar',
+                    date: today,
+                    clockIn: null,
+                    clockOut: null,
+                    status: 'absent',
+                    hoursWorked: 0,
+                    lateCount: 0
+                }
+            ];
+            localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+        }
+
+        // Get status badge class
+        function getStatusBadgeClass(status) {
+            switch(status) {
+                case 'present': return 'status-present';
+                case 'late': return 'status-late';
+                case 'absent': return 'status-absent';
+                case 'half-day': return 'status-half-day';
+                default: return 'status-present';
+            }
+        }
+
+        // Update attendance summary
+        function updateAttendanceSummary() {
+            const today = new Date().toISOString().split('T')[0];
+            const todayRecords = attendanceRecords.filter(record => record.date === today);
+            
+            const present = todayRecords.filter(r => r.status === 'present').length;
+            const late = todayRecords.filter(r => r.status === 'late').length;
+            const absent = todayRecords.filter(r => r.status === 'absent').length;
+            const halfDay = todayRecords.filter(r => r.status === 'half-day').length;
+
+            document.getElementById('present-count').textContent = present;
+            document.getElementById('late-count').textContent = late;
+            document.getElementById('absent-count').textContent = absent;
+            document.getElementById('half-day-count').textContent = halfDay;
+        }
+
+        // Render attendance records
+        function renderAttendanceRecords(records = attendanceRecords) {
+            const container = document.getElementById('attendance-records');
+            container.innerHTML = '';
+
+            records.slice(0, 10).forEach(record => {
+                const recordCard = document.createElement('div');
+                recordCard.className = 'attendance-card flex items-center justify-between p-4 bg-gray-50 rounded-lg';
+                recordCard.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                            <span class="font-semibold text-indigo-600">${record.employeeName.charAt(0)}</span>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">${record.employeeName}</h4>
+                            <p class="text-sm text-gray-600">${record.employeeId} • ${new Date(record.date).toLocaleDateString('en-IN')}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-center">
+                            <p class="text-sm text-gray-600">Clock In</p>
+                            <p class="font-semibold">${record.clockIn || '--:--'}</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-sm text-gray-600">Clock Out</p>
+                            <p class="font-semibold">${record.clockOut || '--:--'}</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-sm text-gray-600">Hours</p>
+                            <p class="font-semibold">${record.hoursWorked.toFixed(2)}</p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(record.status)}">${record.status.toUpperCase()}</span>
+                    </div>
+                `;
+                container.appendChild(recordCard);
+            });
+        }
+
+        // Attendance methods
+        document.getElementById('admin-method').addEventListener('click', function() {
+            if (user.role === 'admin') {
+                alert('Admin Entry mode selected. You can now mark attendance for employees from the employee management page.');
+            } else {
+                alert('You do not have permission to use Admin Entry mode.');
+            }
+        });
+
+        document.getElementById('qr-method').addEventListener('click', function() {
+            document.getElementById('qr-scanner-section').classList.remove('hidden');
+            document.getElementById('scan-status').textContent = 'Ready to scan...';
+        });
+
+        // QR Code scanning simulation
+        document.getElementById('clock-in-btn').addEventListener('click', function() {
+            if (user.role === 'employee') {
+                const today = new Date().toISOString().split('T')[0];
+                const now = new Date();
+                const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+                
+                // Check if already clocked in
+                const existingRecord = attendanceRecords.find(r => r.employeeId === 'EMP-001' && r.date === today);
+                
+                if (existingRecord && existingRecord.clockIn) {
+                    alert('You have already clocked in today!');
+                    return;
+                }
+                
+                // Determine status based on time (assuming 9:00 AM is on time)
+                const [hours, minutes] = currentTime.split(':').map(Number);
+                const isLate = hours > 9 || (hours === 9 && minutes > 0);
+                const status = isLate ? 'late' : 'present';
+                
+                // Create or update attendance record
+                let record = existingRecord;
+                if (!record) {
+                    record = {
+                        id: Math.max(...attendanceRecords.map(r => r.id), 0) + 1,
+                        employeeId: 'EMP-001',
+                        employeeName: user.name,
+                        date: today,
+                        clockIn: currentTime,
+                        clockOut: null,
+                        status: status,
+                        hoursWorked: 0,
+                        lateCount: isLate ? 1 : 0
+                    };
+                    attendanceRecords.push(record);
+                } else {
+                    record.clockIn = currentTime;
+                    record.status = status;
+                    record.lateCount = isLate ? (record.lateCount || 0) + 1 : 0;
+                }
+                
+                localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+                document.getElementById('scan-status').textContent = `Clocked in at ${currentTime} - ${status.toUpperCase()}`;
+                document.getElementById('scan-status').className = `text-sm ${isLate ? 'text-yellow-600' : 'text-green-600'}`;
+                
+                updateAttendanceSummary();
+                renderAttendanceRecords();
+                logActivity('attendance_marked', `${user.name} clocked in at ${currentTime}`);
+            } else {
+                alert('Only employees can use QR code attendance.');
+            }
+        });
+
+        document.getElementById('clock-out-btn').addEventListener('click', function() {
+            if (user.role === 'employee') {
+                const today = new Date().toISOString().split('T')[0];
+                const now = new Date();
+                const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+                
+                const record = attendanceRecords.find(r => r.employeeId === 'EMP-001' && r.date === today);
+                
+                if (!record || !record.clockIn) {
+                    alert('You must clock in before clocking out!');
+                    return;
+                }
+                
+                if (record.clockOut) {
+                    alert('You have already clocked out today!');
+                    return;
+                }
+                
+                // Calculate hours worked
+                const [inHours, inMinutes] = record.clockIn.split(':').map(Number);
+                const [outHours, outMinutes] = currentTime.split(':').map(Number);
+                const totalMinutes = (outHours * 60 + outMinutes) - (inHours * 60 + inMinutes);
+                const hoursWorked = totalMinutes / 60;
+                
+                record.clockOut = currentTime;
+                record.hoursWorked = hoursWorked;
+                
+                localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+                document.getElementById('scan-status').textContent = `Clocked out at ${currentTime} - Worked ${hoursWorked.toFixed(2)} hours`;
+                document.getElementById('scan-status').className = 'text-sm text-blue-600';
+                
+                updateAttendanceSummary();
+                renderAttendanceRecords();
+                logActivity('attendance_marked', `${user.name} clocked out at ${currentTime}`);
+            } else {
+                alert('Only employees can use QR code attendance.');
+            }
+        });
+
+        // Initialize charts
+        function initializeCharts() {
+            // Weekly attendance trend
+            const weeklyData = {
+                x: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                y: [95, 92, 88, 94, 90, 85],
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: { color: '#6366f1', width: 3 },
+                marker: { color: '#6366f1', size: 8 },
+                name: 'Attendance %'
+            };
+
+            const weeklyLayout = {
+                title: '',
+                xaxis: { title: 'Day of Week' },
+                yaxis: { title: 'Attendance %' },
+                margin: { t: 20, r: 20, b: 50, l: 60 },
+                font: { family: 'Inter, sans-serif' }
+            };
+
+            Plotly.newPlot('attendance-chart', [weeklyData], weeklyLayout, {responsive: true});
+
+            // Late arrivals by employee
+            const lateData = [{
+                values: [3, 2, 1, 0, 1],
+                labels: ['Rajesh Sharma', 'Priya Patel', 'Amit Kumar', 'Sneha Singh', 'Rohan Verma'],
+                type: 'pie',
+                marker: {
+                    colors: ['#f59e0b', '#ef4444', '#dc2626', '#b91c1c', '#991b1b']
+                }
+            }];
+
+            const lateLayout = {
+                title: '',
+                margin: { t: 20, r: 20, b: 20, l: 20 },
+                font: { family: 'Inter, sans-serif' }
+            };
+
+            Plotly.newPlot('late-chart', lateData, lateLayout, {responsive: true});
+        }
+
+        // Log activity
+        function logActivity(action, details) {
+            const activities = JSON.parse(localStorage.getItem('activities') || '[]');
+            activities.unshift({
+                action: action,
+                details: details,
+                timestamp: new Date().toISOString(),
+                user: user.username
+            });
+            localStorage.setItem('activities', JSON.stringify(activities.slice(0, 50)));
+        }
+
+        // Initialize
+        updateAttendanceSummary();
+        renderAttendanceRecords();
+        initializeCharts();
+
+        // Set today's date as default
+        document.getElementById('date-filter').valueAsDate = new Date();
+
+        // Event listeners
+        document.getElementById('refresh-records').addEventListener('click', function() {
+            renderAttendanceRecords();
+        });
+
+        document.getElementById('date-filter').addEventListener('change', function() {
+            const selectedDate = this.value;
+            const filteredRecords = attendanceRecords.filter(r => r.date === selectedDate);
+            renderAttendanceRecords(filteredRecords);
+        });
+
+        // Sidebar toggle
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+
+        // User dropdown
+        document.getElementById('user-menu').addEventListener('click', function() {
+            document.getElementById('user-dropdown').classList.toggle('hidden');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#user-menu')) {
+                document.getElementById('user-dropdown').classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

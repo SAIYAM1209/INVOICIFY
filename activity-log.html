@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Log - invoicify now</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar { transition: all 0.3s ease; }
+        .sidebar.collapsed { transform: translateX(-100%); }
+        .main-content { transition: all 0.3s ease; }
+        .main-content.expanded { margin-left: 0; }
+        .activity-item { transition: all 0.3s ease; }
+        .activity-item:hover { transform: translateX(4px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: white; border-radius: 1rem; padding: 2rem; max-width: 90%; max-height: 90%; overflow-y: auto; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <button id="sidebar-toggle" class="text-gray-500 hover:text-gray-700 mr-4">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-2xl font-bold text-indigo-600">invoicify now</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button class="text-gray-500 hover:text-gray-700 relative">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <button id="user-menu" class="flex items-center space-x-2 text-gray-700 hover:text-gray-900">
+                            <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-indigo-600 text-sm"></i>
+                            </div>
+                            <span id="user-name" class="font-medium">Admin User</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2">
+                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</a>
+                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Settings</a>
+                            <hr class="my-2">
+                            <a href="login.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar fixed left-0 top-16 h-full w-64 bg-white shadow-lg z-30">
+        <div class="p-4">
+            <div class="mb-6">
+                <div class="flex items-center space-x-3 p-3 bg-indigo-50 rounded-lg">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div>
+                        <h3 id="sidebar-user-name" class="font-semibold text-gray-900">Admin User</h3>
+                        <p id="sidebar-user-role" class="text-xs text-gray-500">Administrator</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="dashboard.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <div id="admin-menu" class="space-y-2">
+                    <a href="invoices.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-receipt"></i>
+                        <span>Invoices</span>
+                    </a>
+                    <a href="customers.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-users"></i>
+                        <span>Customers</span>
+                    </a>
+                    <a href="inventory.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-boxes"></i>
+                        <span>Inventory</span>
+                    </a>
+                    <a href="employees.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-users-cog"></i>
+                        <span>Employees</span>
+                    </a>
+                    <a href="attendance.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-clock"></i>
+                        <span>Attendance</span>
+                    </a>
+                    <a href="activity-log.html" class="flex items-center space-x-3 p-3 bg-indigo-100 text-indigo-700 rounded-lg">
+                        <i class="fas fa-history"></i>
+                        <span>Activity Log</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" class="main-content pt-16 ml-64">
+        <div class="p-6">
+            <!-- Page Header -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Activity Log</h1>
+                    <p class="text-gray-600">Track all system activities and user actions</p>
+                </div>
+                <div class="flex space-x-4">
+                    <button id="export-log-btn" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors shadow-lg">
+                        <i class="fas fa-download mr-2"></i>Export Log
+                    </button>
+                    <button id="clear-log-btn" class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors shadow-lg">
+                        <i class="fas fa-trash mr-2"></i>Clear Log
+                    </button>
+                </div>
+            </div>
+
+            <!-- Activity Statistics -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Total Activities</p>
+                            <p class="text-2xl font-bold text-gray-900" id="total-activities">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-list text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Today</p>
+                            <p class="text-2xl font-bold text-green-600" id="today-activities">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-calendar-day text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Active Users</p>
+                            <p class="text-2xl font-bold text-purple-600" id="active-users">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-users text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Critical Actions</p>
+                            <p class="text-2xl font-bold text-red-600" id="critical-actions">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white rounded-xl p-6 shadow-lg mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Search Activities</label>
+                        <input type="text" id="search-activity" placeholder="Search by user, action, or details..." 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Action Type</label>
+                        <select id="action-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <option value="">All Actions</option>
+                            <option value="login">Login</option>
+                            <option value="create">Create</option>
+                            <option value="update">Update</option>
+                            <option value="delete">Delete</option>
+                            <option value="export">Export</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                        <input type="date" id="date-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    </div>
+                    <div class="flex items-end">
+                        <button id="clear-filters" class="w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors">
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Timeline -->
+            <div class="bg-white rounded-xl p-6 shadow-lg">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Recent Activities</h3>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-600">Auto-refresh in</span>
+                        <span id="refresh-countdown" class="text-sm font-semibold text-indigo-600">30s</span>
+                        <button id="refresh-now" class="text-indigo-600 hover:text-indigo-700">
+                            <i class="fas fa-refresh"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="activity-timeline" class="space-y-4">
+                    <!-- Activities will be loaded here -->
+                </div>
+                <div id="load-more" class="text-center mt-6">
+                    <button id="load-more-btn" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                        Load More Activities
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Details Modal -->
+    <div id="activity-modal" class="modal">
+        <div class="modal-content w-full max-w-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Activity Details</h2>
+                <button id="close-activity-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="activity-details" class="space-y-4">
+                <!-- Activity details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        const user = JSON.parse(localStorage.getItem('invoicifyUser'));
+        if (!user) {
+            window.location.href = 'login.html';
+        }
+
+        // Update user info
+        document.getElementById('user-name').textContent = user.name;
+        document.getElementById('sidebar-user-name').textContent = user.name;
+        document.getElementById('sidebar-user-role').textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+
+        // Sample activities data
+        let activities = JSON.parse(localStorage.getItem('activities') || '[]');
+        let displayedActivities = 20;
+
+        // Initialize sample activities if empty
+        if (activities.length === 0) {
+            const now = new Date();
+            activities = [
+                {
+                    id: 1,
+                    user: 'admin',
+                    name: 'Admin User',
+                    action: 'login',
+                    details: 'User logged into the system',
+                    timestamp: now.toISOString(),
+                    ip: '192.168.1.100',
+                    severity: 'info'
+                },
+                {
+                    id: 2,
+                    user: 'rajesh',
+                    name: 'Rajesh Sharma',
+                    action: 'create',
+                    details: 'Created new invoice #INV-2025-001 for ABC Corporation',
+                    timestamp: new Date(now.getTime() - 30 * 60 * 1000).toISOString(),
+                    ip: '192.168.1.101',
+                    severity: 'info'
+                },
+                {
+                    id: 3,
+                    user: 'priya',
+                    name: 'Priya Patel',
+                    action: 'update',
+                    details: 'Updated customer information for TechStart Pvt Ltd',
+                    timestamp: new Date(now.getTime() - 60 * 60 * 1000).toISOString(),
+                    ip: '192.168.1.102',
+                    severity: 'info'
+                },
+                {
+                    id: 4,
+                    user: 'amit',
+                    name: 'Amit Kumar',
+                    action: 'delete',
+                    details: 'Deleted product SKU-1234 from inventory',
+                    timestamp: new Date(now.getTime() - 90 * 60 * 1000).toISOString(),
+                    ip: '192.168.1.103',
+                    severity: 'warning'
+                },
+                {
+                    id: 5,
+                    user: 'admin',
+                    name: 'Admin User',
+                    action: 'export',
+                    details: 'Exported attendance report for October 2025',
+                    timestamp: new Date(now.getTime() - 120 * 60 * 1000).toISOString(),
+                    ip: '192.168.1.100',
+                    severity: 'info'
+                }
+            ];
+            localStorage.setItem('activities', JSON.stringify(activities));
+        }
+
+        // Get action icon
+        function getActionIcon(action) {
+            switch(action) {
+                case 'login': return 'fas fa-sign-in-alt text-green-600';
+                case 'logout': return 'fas fa-sign-out-alt text-red-600';
+                case 'create': return 'fas fa-plus text-blue-600';
+                case 'update': return 'fas fa-edit text-yellow-600';
+                case 'delete': return 'fas fa-trash text-red-600';
+                case 'export': return 'fas fa-download text-purple-600';
+                case 'import': return 'fas fa-upload text-indigo-600';
+                default: return 'fas fa-info-circle text-gray-600';
+            }
+        }
+
+        // Get severity color
+        function getSeverityColor(severity) {
+            switch(severity) {
+                case 'info': return 'border-l-blue-500 bg-blue-50';
+                case 'warning': return 'border-l-yellow-500 bg-yellow-50';
+                case 'error': return 'border-l-red-500 bg-red-50';
+                case 'success': return 'border-l-green-500 bg-green-50';
+                default: return 'border-l-gray-500 bg-gray-50';
+            }
+        }
+
+        // Format timestamp
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / (1000 * 60));
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+            if (minutes < 1) return 'Just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            if (days < 7) return `${days}d ago`;
+            return date.toLocaleDateString('en-IN', { 
+                day: '2-digit', 
+                month: 'short', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const totalActivities = activities.length;
+            const today = new Date().toISOString().split('T')[0];
+            const todayActivities = activities.filter(a => a.timestamp.split('T')[0] === today).length;
+            const activeUsers = new Set(activities.map(a => a.user)).size;
+            const criticalActions = activities.filter(a => a.severity === 'error' || a.severity === 'warning').length;
+
+            document.getElementById('total-activities').textContent = totalActivities;
+            document.getElementById('today-activities').textContent = todayActivities;
+            document.getElementById('active-users').textContent = activeUsers;
+            document.getElementById('critical-actions').textContent = criticalActions;
+        }
+
+        // Render activities
+        function renderActivities(activitiesToRender = activities) {
+            const container = document.getElementById('activity-timeline');
+            container.innerHTML = '';
+
+            activitiesToRender.slice(0, displayedActivities).forEach(activity => {
+                const activityItem = document.createElement('div');
+                activityItem.className = `activity-item p-4 border-l-4 ${getSeverityColor(activity.severity)} rounded-r-lg cursor-pointer`;
+                activityItem.innerHTML = `
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0">
+                            <i class="${getActionIcon(activity.action)} text-xl"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-medium text-gray-900">
+                                    ${activity.name} <span class="text-gray-500">${activity.action.toUpperCase()}</span>
+                                </p>
+                                <p class="text-xs text-gray-500">${formatTimestamp(activity.timestamp)}</p>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-1">${activity.details}</p>
+                            <div class="flex items-center mt-2 space-x-4 text-xs text-gray-500">
+                                <span><i class="fas fa-user mr-1"></i>${activity.user}</span>
+                                <span><i class="fas fa-map-marker-alt mr-1"></i>${activity.ip}</span>
+                                <span class="capitalize"><i class="fas fa-tag mr-1"></i>${activity.severity}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                activityItem.addEventListener('click', () => showActivityDetails(activity));
+                container.appendChild(activityItem);
+            });
+
+            // Show/hide load more button
+            const loadMoreBtn = document.getElementById('load-more-btn');
+            if (displayedActivities >= activitiesToRender.length) {
+                document.getElementById('load-more').style.display = 'none';
+            } else {
+                document.getElementById('load-more').style.display = 'block';
+            }
+        }
+
+        // Filter activities
+        function filterActivities() {
+            const searchTerm = document.getElementById('search-activity').value.toLowerCase();
+            const actionFilter = document.getElementById('action-filter').value;
+            const dateFilter = document.getElementById('date-filter').value;
+
+            let filtered = activities.filter(activity => {
+                const matchesSearch = activity.user.toLowerCase().includes(searchTerm) || 
+                                    activity.name.toLowerCase().includes(searchTerm) ||
+                                    activity.details.toLowerCase().includes(searchTerm);
+                
+                const matchesAction = !actionFilter || activity.action === actionFilter;
+                const matchesDate = !dateFilter || activity.timestamp.split('T')[0] === dateFilter;
+                
+                return matchesSearch && matchesAction && matchesDate;
+            });
+
+            renderActivities(filtered);
+        }
+
+        // Show activity details
+        function showActivityDetails(activity) {
+            const modal = document.getElementById('activity-modal');
+            const detailsContainer = document.getElementById('activity-details');
+            
+            detailsContainer.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">User</label>
+                        <p class="text-gray-900">${activity.name} (${activity.user})</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Action</label>
+                        <p class="text-gray-900 capitalize">${activity.action}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Timestamp</label>
+                        <p class="text-gray-900">${new Date(activity.timestamp).toLocaleString('en-IN')}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">IP Address</label>
+                        <p class="text-gray-900">${activity.ip}</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Details</label>
+                        <p class="text-gray-900">${activity.details}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Severity</label>
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${getSeverityColor(activity.severity).split(' ')[1]} capitalize">${activity.severity}</span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Activity ID</label>
+                        <p class="text-gray-900">#${activity.id}</p>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('show');
+        }
+
+        // Event listeners
+        document.getElementById('search-activity').addEventListener('input', filterActivities);
+        document.getElementById('action-filter').addEventListener('change', filterActivities);
+        document.getElementById('date-filter').addEventListener('change', filterActivities);
+        document.getElementById('clear-filters').addEventListener('click', function() {
+            document.getElementById('search-activity').value = '';
+            document.getElementById('action-filter').value = '';
+            document.getElementById('date-filter').value = '';
+            renderActivities();
+        });
+
+        // Load more activities
+        document.getElementById('load-more-btn').addEventListener('click', function() {
+            displayedActivities += 20;
+            renderActivities();
+        });
+
+        // Export log
+        document.getElementById('export-log-btn').addEventListener('click', function() {
+            const logData = activities.map(activity => ({
+                'Timestamp': activity.timestamp,
+                'User': activity.user,
+                'Name': activity.name,
+                'Action': activity.action,
+                'Details': activity.details,
+                'IP Address': activity.ip,
+                'Severity': activity.severity
+            }));
+            
+            const csvContent = "data:text/csv;charset=utf-8," 
+                + "Timestamp,User,Name,Action,Details,IP Address,Severity\n"
+                + logData.map(row => Object.values(row).join(',')).join('\n');
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', `activity_log_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            logActivity('log_exported', 'Exported activity log as CSV');
+        });
+
+        // Clear log
+        document.getElementById('clear-log-btn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to clear all activity logs? This action cannot be undone.')) {
+                activities = [];
+                localStorage.setItem('activities', JSON.stringify(activities));
+                displayedActivities = 20;
+                updateStatistics();
+                renderActivities();
+                logActivity('log_cleared', 'Cleared all activity logs');
+            }
+        });
+
+        // Modal functionality
+        const modal = document.getElementById('activity-modal');
+        const closeModal = document.getElementById('close-activity-modal');
+
+        closeModal.addEventListener('click', function() {
+            modal.classList.remove('show');
+        });
+
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.remove('show');
+            }
+        });
+
+        // Auto-refresh countdown
+        let refreshCountdown = 30;
+        setInterval(() => {
+            refreshCountdown--;
+            document.getElementById('refresh-countdown').textContent = `${refreshCountdown}s`;
+            
+            if (refreshCountdown <= 0) {
+                refreshCountdown = 30;
+                updateStatistics();
+                renderActivities();
+            }
+        }, 1000);
+
+        // Refresh now
+        document.getElementById('refresh-now').addEventListener('click', function() {
+            refreshCountdown = 30;
+            updateStatistics();
+            renderActivities();
+        });
+
+        // Log activity function
+        function logActivity(action, details) {
+            const newActivity = {
+                id: Math.max(...activities.map(a => a.id), 0) + 1,
+                user: user.username,
+                name: user.name,
+                action: action,
+                details: details,
+                timestamp: new Date().toISOString(),
+                ip: '192.168.1.100',
+                severity: 'info'
+            };
+            
+            activities.unshift(newActivity);
+            localStorage.setItem('activities', JSON.stringify(activities.slice(0, 100))); // Keep last 100 activities
+        }
+
+        // Initialize
+        updateStatistics();
+        renderActivities();
+
+        // Sidebar toggle
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+
+        // Set today's date as default
+        document.getElementById('date-filter').valueAsDate = new Date();
+    </script>
+</body>
+</html>

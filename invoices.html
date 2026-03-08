@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoices - invoicify now</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar { transition: all 0.3s ease; }
+        .sidebar.collapsed { transform: translateX(-100%); }
+        .main-content { transition: all 0.3s ease; }
+        .main-content.expanded { margin-left: 0; }
+        .invoice-card { transition: all 0.3s ease; }
+        .invoice-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .status-badge { font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.375rem; font-weight: 500; }
+        .status-paid { background-color: #dcfce7; color: #166534; }
+        .status-pending { background-color: #fef3c7; color: #92400e; }
+        .status-overdue { background-color: #fee2e2; color: #991b1b; }
+        .status-draft { background-color: #f3f4f6; color: #374151; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: white; border-radius: 1rem; padding: 2rem; max-width: 90%; max-height: 90%; overflow-y: auto; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <button id="sidebar-toggle" class="text-gray-500 hover:text-gray-700 mr-4">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-2xl font-bold text-indigo-600">invoicify now</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button class="text-gray-500 hover:text-gray-700 relative">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <button id="user-menu" class="flex items-center space-x-2 text-gray-700 hover:text-gray-900">
+                            <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-indigo-600 text-sm"></i>
+                            </div>
+                            <span id="user-name" class="font-medium">Admin User</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2">
+                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</a>
+                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Settings</a>
+                            <hr class="my-2">
+                            <a href="login.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar fixed left-0 top-16 h-full w-64 bg-white shadow-lg z-30">
+        <div class="p-4">
+            <div class="mb-6">
+                <div class="flex items-center space-x-3 p-3 bg-indigo-50 rounded-lg">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div>
+                        <h3 id="sidebar-user-name" class="font-semibold text-gray-900">Admin User</h3>
+                        <p id="sidebar-user-role" class="text-xs text-gray-500">Administrator</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="dashboard.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <div id="admin-menu" class="space-y-2">
+                    <a href="invoices.html" class="flex items-center space-x-3 p-3 bg-indigo-100 text-indigo-700 rounded-lg">
+                        <i class="fas fa-receipt"></i>
+                        <span>Invoices</span>
+                    </a>
+                    <a href="customers.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-users"></i>
+                        <span>Customers</span>
+                    </a>
+                    <a href="inventory.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-boxes"></i>
+                        <span>Inventory</span>
+                    </a>
+                    <a href="employees.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-users-cog"></i>
+                        <span>Employees</span>
+                    </a>
+                    <a href="attendance.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-clock"></i>
+                        <span>Attendance</span>
+                    </a>
+                    <a href="activity-log.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-history"></i>
+                        <span>Activity Log</span>
+                    </a>
+                </div>
+                <div id="cashier-menu" class="space-y-2 hidden">
+                    <a href="invoices.html" class="flex items-center space-x-3 p-3 bg-indigo-100 text-indigo-700 rounded-lg">
+                        <i class="fas fa-receipt"></i>
+                        <span>Invoices</span>
+                    </a>
+                    <a href="customers.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-users"></i>
+                        <span>Customers</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" class="main-content pt-16 ml-64">
+        <div class="p-6">
+            <!-- Page Header -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Invoice Management</h1>
+                    <p class="text-gray-600">Create, manage, and track all your invoices</p>
+                </div>
+                <button id="create-invoice-btn" class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-lg">
+                    <i class="fas fa-plus mr-2"></i>Create New Invoice
+                </button>
+            </div>
+
+            <!-- Filters and Search -->
+            <div class="bg-white rounded-xl p-6 shadow-lg mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                        <input type="text" id="search-invoice" placeholder="Search by invoice number or customer..." 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <select id="status-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <option value="">All Status</option>
+                            <option value="paid">Paid</option>
+                            <option value="pending">Pending</option>
+                            <option value="overdue">Overdue</option>
+                            <option value="draft">Draft</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                        <input type="date" id="date-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    </div>
+                    <div class="flex items-end">
+                        <button id="clear-filters" class="w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors">
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoices Grid -->
+            <div id="invoices-grid" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                <!-- Invoices will be dynamically loaded here -->
+            </div>
+
+            <!-- Pagination -->
+            <div class="mt-8 flex justify-center">
+                <nav class="flex items-center space-x-2">
+                    <button id="prev-page" class="px-3 py-2 text-gray-500 hover:text-gray-700 disabled:opacity-50">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span id="page-info" class="px-4 py-2 text-gray-700">Page 1 of 5</span>
+                    <button id="next-page" class="px-3 py-2 text-gray-500 hover:text-gray-700 disabled:opacity-50">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Invoice Modal -->
+    <div id="invoice-modal" class="modal">
+        <div class="modal-content w-full max-w-4xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modal-title" class="text-2xl font-bold text-gray-900">Create New Invoice</h2>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <form id="invoice-form" class="space-y-6">
+                <!-- Customer and Invoice Details -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Customer</label>
+                        <select id="customer-select" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <option value="">Select Customer</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Invoice Date</label>
+                        <input type="date" id="invoice-date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
+                        <input type="date" id="due-date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <select id="invoice-status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <option value="draft">Draft</option>
+                            <option value="pending">Pending</option>
+                            <option value="paid">Paid</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Items Section -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Invoice Items</h3>
+                    <div id="items-container" class="space-y-4">
+                        <!-- Items will be dynamically added here -->
+                    </div>
+                    <button type="button" id="add-item" class="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Add Item
+                    </button>
+                </div>
+
+                <!-- Totals -->
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-right">
+                            <p class="text-sm text-gray-600">Subtotal:</p>
+                            <p class="text-lg font-semibold">₹<span id="subtotal">0.00</span></p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-600">GST (18%):</p>
+                            <p class="text-lg font-semibold">₹<span id="gst-amount">0.00</span></p>
+                        </div>
+                        <div class="text-right col-span-2">
+                            <p class="text-sm text-gray-600">Total:</p>
+                            <p class="text-2xl font-bold text-indigo-600">₹<span id="total-amount">0.00</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-4">
+                    <button type="button" id="save-draft" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        Save as Draft
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                        Create Invoice
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        const user = JSON.parse(localStorage.getItem('invoicifyUser'));
+        if (!user) {
+            window.location.href = 'login.html';
+        }
+
+        // Update user info
+        document.getElementById('user-name').textContent = user.name;
+        document.getElementById('sidebar-user-name').textContent = user.name;
+        document.getElementById('sidebar-user-role').textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+
+        // Sample data
+        let invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+        let customers = JSON.parse(localStorage.getItem('customers') || '[]');
+        let products = JSON.parse(localStorage.getItem('products') || '[]');
+
+        // Initialize sample data if empty
+        if (invoices.length === 0) {
+            invoices = [
+                {
+                    id: 'INV-2025-001',
+                    customer: 'ABC Corporation',
+                    date: '2025-10-15',
+                    dueDate: '2025-11-15',
+                    amount: 15000,
+                    status: 'paid',
+                    items: [{ product: 'Product A', quantity: 5, price: 3000 }]
+                },
+                {
+                    id: 'INV-2025-002',
+                    customer: 'TechStart Pvt Ltd',
+                    date: '2025-10-16',
+                    dueDate: '2025-11-16',
+                    amount: 25000,
+                    status: 'pending',
+                    items: [{ product: 'Product B', quantity: 10, price: 2500 }]
+                },
+                {
+                    id: 'INV-2025-003',
+                    customer: 'Global Industries',
+                    date: '2025-10-14',
+                    dueDate: '2025-10-30',
+                    amount: 18000,
+                    status: 'overdue',
+                    items: [{ product: 'Product C', quantity: 6, price: 3000 }]
+                }
+            ];
+            localStorage.setItem('invoices', JSON.stringify(invoices));
+        }
+
+        if (customers.length === 0) {
+            customers = [
+                { id: 1, name: 'ABC Corporation', email: 'contact@abc.com', phone: '9876543210' },
+                { id: 2, name: 'TechStart Pvt Ltd', email: 'info@techstart.com', phone: '9123456789' },
+                { id: 3, name: 'Global Industries', email: 'business@global.com', phone: '9988776655' }
+            ];
+            localStorage.setItem('customers', JSON.stringify(customers));
+        }
+
+        if (products.length === 0) {
+            products = [
+                { id: 1, name: 'Product A', price: 3000 },
+                { id: 2, name: 'Product B', price: 2500 },
+                { id: 3, name: 'Product C', price: 3000 },
+                { id: 4, name: 'Product D', price: 1500 }
+            ];
+            localStorage.setItem('products', JSON.stringify(products));
+        }
+
+        // Populate customer select
+        function populateCustomerSelect() {
+            const select = document.getElementById('customer-select');
+            select.innerHTML = '<option value="">Select Customer</option>';
+            customers.forEach(customer => {
+                const option = document.createElement('option');
+                option.value = customer.id;
+                option.textContent = customer.name;
+                select.appendChild(option);
+            });
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR'
+            }).format(amount);
+        }
+
+        // Get status badge class
+        function getStatusBadgeClass(status) {
+            switch(status) {
+                case 'paid': return 'status-paid';
+                case 'pending': return 'status-pending';
+                case 'overdue': return 'status-overdue';
+                case 'draft': return 'status-draft';
+                default: return 'status-draft';
+            }
+        }
+
+        // Render invoices
+        function renderInvoices(invoicesToRender = invoices) {
+            const grid = document.getElementById('invoices-grid');
+            grid.innerHTML = '';
+
+            invoicesToRender.forEach(invoice => {
+                const invoiceCard = document.createElement('div');
+                invoiceCard.className = 'invoice-card bg-white rounded-xl p-6 shadow-lg';
+                invoiceCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">${invoice.id}</h3>
+                            <p class="text-sm text-gray-600">${invoice.customer}</p>
+                        </div>
+                        <span class="status-badge ${getStatusBadgeClass(invoice.status)}">${invoice.status.toUpperCase()}</span>
+                    </div>
+                    <div class="space-y-2 mb-4">
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Invoice Date:</span>
+                            <span class="text-sm font-medium">${new Date(invoice.date).toLocaleDateString('en-IN')}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Due Date:</span>
+                            <span class="text-sm font-medium">${new Date(invoice.dueDate).toLocaleDateString('en-IN')}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Amount:</span>
+                            <span class="text-lg font-bold text-indigo-600">${formatCurrency(invoice.amount)}</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="viewInvoice('${invoice.id}')" class="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-eye mr-1"></i>View
+                        </button>
+                        <button onclick="editInvoice('${invoice.id}')" class="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors">
+                            <i class="fas fa-edit mr-1"></i>Edit
+                        </button>
+                        <button onclick="downloadInvoice('${invoice.id}')" class="flex-1 bg-purple-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors">
+                            <i class="fas fa-download mr-1"></i>PDF
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(invoiceCard);
+            });
+        }
+
+        // Filter invoices
+        function filterInvoices() {
+            const searchTerm = document.getElementById('search-invoice').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+            const dateFilter = document.getElementById('date-filter').value;
+
+            let filtered = invoices.filter(invoice => {
+                const matchesSearch = invoice.id.toLowerCase().includes(searchTerm) || 
+                                    invoice.customer.toLowerCase().includes(searchTerm);
+                const matchesStatus = !statusFilter || invoice.status === statusFilter;
+                const matchesDate = !dateFilter || invoice.date === dateFilter;
+                
+                return matchesSearch && matchesStatus && matchesDate;
+            });
+
+            renderInvoices(filtered);
+        }
+
+        // Event listeners
+        document.getElementById('search-invoice').addEventListener('input', filterInvoices);
+        document.getElementById('status-filter').addEventListener('change', filterInvoices);
+        document.getElementById('date-filter').addEventListener('change', filterInvoices);
+        document.getElementById('clear-filters').addEventListener('click', function() {
+            document.getElementById('search-invoice').value = '';
+            document.getElementById('status-filter').value = '';
+            document.getElementById('date-filter').value = '';
+            renderInvoices();
+        });
+
+        // Modal functionality
+        const modal = document.getElementById('invoice-modal');
+        const closeModal = document.getElementById('close-modal');
+
+        document.getElementById('create-invoice-btn').addEventListener('click', function() {
+            document.getElementById('modal-title').textContent = 'Create New Invoice';
+            populateCustomerSelect();
+            modal.classList.add('show');
+        });
+
+        closeModal.addEventListener('click', function() {
+            modal.classList.remove('show');
+        });
+
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.remove('show');
+            }
+        });
+
+        // Invoice actions
+        function viewInvoice(id) {
+            alert(`Viewing invoice ${id}. This would open a detailed view in a real application.`);
+        }
+
+        function editInvoice(id) {
+            alert(`Editing invoice ${id}. This would open the edit form in a real application.`);
+        }
+
+        function downloadInvoice(id) {
+            const invoice = invoices.find(inv => inv.id === id);
+            if (invoice) {
+                // Create PDF
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Add content
+                doc.setFontSize(20);
+                doc.text('INVOICE', 105, 20, { align: 'center' });
+                doc.setFontSize(12);
+                doc.text(`Invoice #: ${invoice.id}`, 20, 40);
+                doc.text(`Customer: ${invoice.customer}`, 20, 50);
+                doc.text(`Date: ${new Date(invoice.date).toLocaleDateString('en-IN')}`, 20, 60);
+                doc.text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString('en-IN')}`, 20, 70);
+                doc.text(`Total: ${formatCurrency(invoice.amount)}`, 20, 80);
+                doc.text(`Status: ${invoice.status.toUpperCase()}`, 20, 90);
+                
+                // Save PDF
+                doc.save(`${invoice.id}.pdf`);
+                
+                // Log activity
+                logActivity('invoice_download', `Downloaded invoice ${id} as PDF`);
+            }
+        }
+
+        // Log activity
+        function logActivity(action, details) {
+            const activities = JSON.parse(localStorage.getItem('activities') || '[]');
+            activities.unshift({
+                action: action,
+                details: details,
+                timestamp: new Date().toISOString(),
+                user: user.username
+            });
+            localStorage.setItem('activities', JSON.stringify(activities.slice(0, 50)));
+        }
+
+        // Initialize
+        renderInvoices();
+
+        // Sidebar toggle
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+
+        // Set today's date as default
+        document.getElementById('invoice-date').valueAsDate = new Date();
+        
+        // Set due date to 30 days from now
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + 30);
+        document.getElementById('due-date').valueAsDate = dueDate;
+    </script>
+</body>
+</html>

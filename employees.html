@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employees - invoicify now</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar { transition: all 0.3s ease; }
+        .sidebar.collapsed { transform: translateX(-100%); }
+        .main-content { transition: all 0.3s ease; }
+        .main-content.expanded { margin-left: 0; }
+        .employee-card { transition: all 0.3s ease; }
+        .employee-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .status-active { background-color: #dcfce7; color: #166534; }
+        .status-inactive { background-color: #fee2e2; color: #991b1b; }
+        .status-on-leave { background-color: #fef3c7; color: #92400e; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: white; border-radius: 1rem; padding: 2rem; max-width: 90%; max-height: 90%; overflow-y: auto; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <button id="sidebar-toggle" class="text-gray-500 hover:text-gray-700 mr-4">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-2xl font-bold text-indigo-600">invoicify now</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button class="text-gray-500 hover:text-gray-700 relative">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <button id="user-menu" class="flex items-center space-x-2 text-gray-700 hover:text-gray-900">
+                            <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-indigo-600 text-sm"></i>
+                            </div>
+                            <span id="user-name" class="font-medium">Admin User</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2">
+                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</a>
+                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Settings</a>
+                            <hr class="my-2">
+                            <a href="login.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar fixed left-0 top-16 h-full w-64 bg-white shadow-lg z-30">
+        <div class="p-4">
+            <div class="mb-6">
+                <div class="flex items-center space-x-3 p-3 bg-indigo-50 rounded-lg">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div>
+                        <h3 id="sidebar-user-name" class="font-semibold text-gray-900">Admin User</h3>
+                        <p id="sidebar-user-role" class="text-xs text-gray-500">Administrator</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="dashboard.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <div id="admin-menu" class="space-y-2">
+                    <a href="invoices.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-receipt"></i>
+                        <span>Invoices</span>
+                    </a>
+                    <a href="customers.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-users"></i>
+                        <span>Customers</span>
+                    </a>
+                    <a href="inventory.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-boxes"></i>
+                        <span>Inventory</span>
+                    </a>
+                    <a href="employees.html" class="flex items-center space-x-3 p-3 bg-indigo-100 text-indigo-700 rounded-lg">
+                        <i class="fas fa-users-cog"></i>
+                        <span>Employees</span>
+                    </a>
+                    <a href="attendance.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-clock"></i>
+                        <span>Attendance</span>
+                    </a>
+                    <a href="activity-log.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-history"></i>
+                        <span>Activity Log</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" class="main-content pt-16 ml-64">
+        <div class="p-6">
+            <!-- Page Header -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Employee Management</h1>
+                    <p class="text-gray-600">Manage your team members and their information</p>
+                </div>
+                <button id="add-employee-btn" class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-lg">
+                    <i class="fas fa-plus mr-2"></i>Add New Employee
+                </button>
+            </div>
+
+            <!-- Employee Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Total Employees</p>
+                            <p class="text-2xl font-bold text-gray-900" id="total-employees">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Active Today</p>
+                            <p class="text-2xl font-bold text-green-600" id="active-today">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-user-check text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Departments</p>
+                            <p class="text-2xl font-bold text-purple-600" id="total-departments">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-building text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">On Leave</p>
+                            <p class="text-2xl font-bold text-orange-600" id="on-leave">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-calendar-times text-orange-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="bg-white rounded-xl p-6 shadow-lg mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Search Employees</label>
+                        <input type="text" id="search-employee" placeholder="Search by name, ID, or department..." 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                        <select id="department-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <option value="">All Departments</option>
+                            <option value="sales">Sales</option>
+                            <option value="inventory">Inventory</option>
+                            <option value="admin">Admin</option>
+                            <option value="support">Support</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <select id="status-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="on-leave">On Leave</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button id="clear-filters" class="w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors">
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employees Grid -->
+            <div id="employees-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Employees will be dynamically loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Employee Modal -->
+    <div id="employee-modal" class="modal">
+        <div class="modal-content w-full max-w-4xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modal-title" class="text-2xl font-bold text-gray-900">Add New Employee</h2>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <form id="employee-form" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                        <input type="text" id="employee-name" required 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                               placeholder="Enter full name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Employee ID *</label>
+                        <input type="text" id="employee-id" required 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                               placeholder="e.g., EMP-001">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                        <input type="email" id="employee-email" required 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                               placeholder="Enter email address">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                        <input type="tel" id="employee-phone" required 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                               placeholder="Enter phone number">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                        <select id="employee-department" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <option value="sales">Sales</option>
+                            <option value="inventory">Inventory</option>
+                            <option value="admin">Admin</option>
+                            <option value="support">Support</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Job Title</label>
+                        <input type="text" id="employee-job" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                               placeholder="Enter job title">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Salary (₹)</label>
+                        <input type="number" id="employee-salary" min="0" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                               placeholder="Enter monthly salary">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Joining Date</label>
+                        <input type="date" id="joining-date" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                    <textarea id="employee-address" rows="3" 
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                              placeholder="Enter employee address"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                        <input type="text" id="employee-username" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                               placeholder="Enter username for login">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <input type="password" id="employee-password" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                               placeholder="Enter password">
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-4">
+                    <button type="button" id="cancel-btn" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                        Save Employee
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        const user = JSON.parse(localStorage.getItem('invoicifyUser'));
+        if (!user) {
+            window.location.href = 'login.html';
+        }
+
+        // Update user info
+        document.getElementById('user-name').textContent = user.name;
+        document.getElementById('sidebar-user-name').textContent = user.name;
+        document.getElementById('sidebar-user-role').textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+
+        // Sample data
+        let employees = JSON.parse(localStorage.getItem('employees') || '[]');
+
+        // Initialize sample data if empty
+        if (employees.length === 0) {
+            employees = [
+                {
+                    id: 1,
+                    employeeId: 'EMP-001',
+                    name: 'Rajesh Sharma',
+                    email: 'rajesh@company.com',
+                    phone: '9876543210',
+                    department: 'sales',
+                    jobTitle: 'Sales Manager',
+                    salary: 45000,
+                    joiningDate: '2024-01-15',
+                    address: '123 Mumbai Street, Mumbai, MH 400001',
+                    username: 'rajesh',
+                    password: 'rajesh123',
+                    status: 'active'
+                },
+                {
+                    id: 2,
+                    employeeId: 'EMP-002',
+                    name: 'Priya Patel',
+                    email: 'priya@company.com',
+                    phone: '9123456789',
+                    department: 'inventory',
+                    jobTitle: 'Inventory Manager',
+                    salary: 38000,
+                    joiningDate: '2024-02-01',
+                    address: '456 Bangalore Road, Bangalore, KA 560001',
+                    username: 'priya',
+                    password: 'priya123',
+                    status: 'active'
+                },
+                {
+                    id: 3,
+                    employeeId: 'EMP-003',
+                    name: 'Amit Kumar',
+                    email: 'amit@company.com',
+                    phone: '9988776655',
+                    department: 'admin',
+                    jobTitle: 'Admin Assistant',
+                    salary: 32000,
+                    joiningDate: '2024-03-10',
+                    address: '789 Delhi Avenue, Delhi, DL 110001',
+                    username: 'amit',
+                    password: 'amit123',
+                    status: 'active'
+                },
+                {
+                    id: 4,
+                    employeeId: 'EMP-004',
+                    name: 'Sneha Singh',
+                    email: 'sneha@company.com',
+                    phone: '9876543210',
+                    department: 'support',
+                    jobTitle: 'Customer Support',
+                    salary: 28000,
+                    joiningDate: '2024-04-05',
+                    address: '321 Pune Lane, Pune, MH 411001',
+                    username: 'sneha',
+                    password: 'sneha123',
+                    status: 'on-leave'
+                }
+            ];
+            localStorage.setItem('employees', JSON.stringify(employees));
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR'
+            }).format(amount);
+        }
+
+        // Get status badge class
+        function getStatusBadgeClass(status) {
+            switch(status) {
+                case 'active': return 'status-active';
+                case 'inactive': return 'status-inactive';
+                case 'on-leave': return 'status-on-leave';
+                default: return 'status-active';
+            }
+        }
+
+        // Render employees
+        function renderEmployees(employeesToRender = employees) {
+            const grid = document.getElementById('employees-grid');
+            grid.innerHTML = '';
+
+            employeesToRender.forEach(employee => {
+                const employeeCard = document.createElement('div');
+                employeeCard.className = 'employee-card bg-white rounded-xl p-6 shadow-lg';
+                employeeCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                                <span class="text-lg font-bold text-indigo-600">${employee.name.charAt(0)}</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">${employee.name}</h3>
+                                <p class="text-sm text-gray-600">${employee.employeeId}</p>
+                            </div>
+                        </div>
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(employee.status)}">${employee.status.toUpperCase()}</span>
+                    </div>
+                    <div class="space-y-2 mb-4">
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Department:</span>
+                            <span class="text-sm font-medium capitalize">${employee.department}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Position:</span>
+                            <span class="text-sm font-medium">${employee.jobTitle}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Salary:</span>
+                            <span class="text-sm font-medium">${formatCurrency(employee.salary)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Joined:</span>
+                            <span class="text-sm font-medium">${new Date(employee.joiningDate).toLocaleDateString('en-IN')}</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="viewEmployee(${employee.id})" class="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-eye mr-1"></i>View
+                        </button>
+                        <button onclick="editEmployee(${employee.id})" class="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors">
+                            <i class="fas fa-edit mr-1"></i>Edit
+                        </button>
+                        <button onclick="markAttendance(${employee.id})" class="flex-1 bg-purple-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors">
+                            <i class="fas fa-clock mr-1"></i>Attendance
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(employeeCard);
+            });
+        }
+
+        // Filter employees
+        function filterEmployees() {
+            const searchTerm = document.getElementById('search-employee').value.toLowerCase();
+            const departmentFilter = document.getElementById('department-filter').value;
+            const statusFilter = document.getElementById('status-filter').value;
+
+            let filtered = employees.filter(employee => {
+                const matchesSearch = employee.name.toLowerCase().includes(searchTerm) || 
+                                    employee.employeeId.toLowerCase().includes(searchTerm) ||
+                                    employee.department.toLowerCase().includes(searchTerm);
+                
+                const matchesDepartment = !departmentFilter || employee.department === departmentFilter;
+                const matchesStatus = !statusFilter || employee.status === statusFilter;
+                
+                return matchesSearch && matchesDepartment && matchesStatus;
+            });
+
+            renderEmployees(filtered);
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const totalEmployees = employees.length;
+            const activeToday = employees.filter(e => e.status === 'active').length;
+            const totalDepartments = new Set(employees.map(e => e.department)).size;
+            const onLeave = employees.filter(e => e.status === 'on-leave').length;
+
+            document.getElementById('total-employees').textContent = totalEmployees;
+            document.getElementById('active-today').textContent = activeToday;
+            document.getElementById('total-departments').textContent = totalDepartments;
+            document.getElementById('on-leave').textContent = onLeave;
+        }
+
+        // Event listeners
+        document.getElementById('search-employee').addEventListener('input', filterEmployees);
+        document.getElementById('department-filter').addEventListener('change', filterEmployees);
+        document.getElementById('status-filter').addEventListener('change', filterEmployees);
+        document.getElementById('clear-filters').addEventListener('click', function() {
+            document.getElementById('search-employee').value = '';
+            document.getElementById('department-filter').value = '';
+            document.getElementById('status-filter').value = '';
+            renderEmployees();
+        });
+
+        // Modal functionality
+        const modal = document.getElementById('employee-modal');
+        const closeModal = document.getElementById('close-modal');
+        const cancelBtn = document.getElementById('cancel-btn');
+
+        document.getElementById('add-employee-btn').addEventListener('click', function() {
+            document.getElementById('modal-title').textContent = 'Add New Employee';
+            document.getElementById('employee-form').reset();
+            document.getElementById('joining-date').valueAsDate = new Date();
+            modal.classList.add('show');
+        });
+
+        closeModal.addEventListener('click', function() {
+            modal.classList.remove('show');
+        });
+
+        cancelBtn.addEventListener('click', function() {
+            modal.classList.remove('show');
+        });
+
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.remove('show');
+            }
+        });
+
+        // Employee actions
+        function viewEmployee(id) {
+            const employee = employees.find(e => e.id === id);
+            if (employee) {
+                alert(`Employee Details:\n\nName: ${employee.name}\nID: ${employee.employeeId}\nEmail: ${employee.email}\nPhone: ${employee.phone}\nDepartment: ${employee.department}\nPosition: ${employee.jobTitle}\nSalary: ${formatCurrency(employee.salary)}\nStatus: ${employee.status.toUpperCase()}`);
+            }
+        }
+
+        function editEmployee(id) {
+            const employee = employees.find(e => e.id === id);
+            if (employee) {
+                document.getElementById('modal-title').textContent = 'Edit Employee';
+                document.getElementById('employee-name').value = employee.name;
+                document.getElementById('employee-id').value = employee.employeeId;
+                document.getElementById('employee-email').value = employee.email;
+                document.getElementById('employee-phone').value = employee.phone;
+                document.getElementById('employee-department').value = employee.department;
+                document.getElementById('employee-job').value = employee.jobTitle;
+                document.getElementById('employee-salary').value = employee.salary;
+                document.getElementById('joining-date').value = employee.joiningDate;
+                document.getElementById('employee-address').value = employee.address;
+                document.getElementById('employee-username').value = employee.username;
+                document.getElementById('employee-password').value = employee.password;
+                
+                modal.classList.add('show');
+                modal.dataset.editingId = id;
+            }
+        }
+
+        function markAttendance(id) {
+            // Redirect to attendance page with employee pre-selected
+            localStorage.setItem('selectedEmployee', id);
+            window.location.href = 'attendance.html';
+        }
+
+        // Form submission
+        document.getElementById('employee-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const employeeData = {
+                employeeId: document.getElementById('employee-id').value,
+                name: document.getElementById('employee-name').value,
+                email: document.getElementById('employee-email').value,
+                phone: document.getElementById('employee-phone').value,
+                department: document.getElementById('employee-department').value,
+                jobTitle: document.getElementById('employee-job').value,
+                salary: parseFloat(document.getElementById('employee-salary').value),
+                joiningDate: document.getElementById('joining-date').value,
+                address: document.getElementById('employee-address').value,
+                username: document.getElementById('employee-username').value,
+                password: document.getElementById('employee-password').value,
+                status: 'active'
+            };
+
+            if (modal.dataset.editingId) {
+                // Edit existing employee
+                const id = parseInt(modal.dataset.editingId);
+                const index = employees.findIndex(e => e.id === id);
+                if (index !== -1) {
+                    employees[index] = { ...employees[index], ...employeeData };
+                    logActivity('employee_updated', `Updated employee ${employeeData.name}`);
+                }
+                delete modal.dataset.editingId;
+            } else {
+                // Add new employee
+                employeeData.id = Math.max(...employees.map(e => e.id), 0) + 1;
+                employees.push(employeeData);
+                logActivity('employee_created', `Created new employee ${employeeData.name}`);
+            }
+
+            localStorage.setItem('employees', JSON.stringify(employees));
+            modal.classList.remove('show');
+            renderEmployees();
+            updateStatistics();
+        });
+
+        // Log activity
+        function logActivity(action, details) {
+            const activities = JSON.parse(localStorage.getItem('activities') || '[]');
+            activities.unshift({
+                action: action,
+                details: details,
+                timestamp: new Date().toISOString(),
+                user: user.username
+            });
+            localStorage.setItem('activities', JSON.stringify(activities.slice(0, 50)));
+        }
+
+        // Initialize
+        renderEmployees();
+        updateStatistics();
+
+        // Sidebar toggle
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+    </script>
+</body>
+</html>

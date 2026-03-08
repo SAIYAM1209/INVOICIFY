@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>invoicify now - Complete Business Management Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.birds.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .vanta-canvas { position: absolute !important; top: 0; left: 0; z-index: -1; }
+        .hero-gradient { background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%); }
+        .feature-card { transition: all 0.3s ease; }
+        .feature-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .stats-counter { font-size: 2.5rem; font-weight: 700; color: #6366f1; }
+        .testimonial-card { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); }
+        .interactive-demo { min-height: 400px; }
+        .demo-content { display: none; }
+        .demo-content.active { display: block; animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-link { position: relative; }
+        .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: #6366f1; transition: width 0.3s ease; }
+        .nav-link:hover::after { width: 100%; }
+    </style>
+</head>
+<body class="bg-gray-50 overflow-x-hidden">
+    <!-- Navigation -->
+    <nav class="bg-white/90 backdrop-blur-sm fixed w-full top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-indigo-600">invoicify now</h1>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="nav-link text-gray-700 hover:text-indigo-600 font-medium">Features</a>
+                    <a href="#pricing" class="nav-link text-gray-700 hover:text-indigo-600 font-medium">Pricing</a>
+                    <a href="#demo" class="nav-link text-gray-700 hover:text-indigo-600 font-medium">Demo</a>
+                    <a href="login.html" class="text-gray-700 hover:text-indigo-600 font-medium">Login</a>
+                    <a href="dashboard.html" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium">Try for Free</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-gray-700 hover:text-indigo-600">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="px-4 py-2 space-y-2">
+                <a href="#features" class="block py-2 text-gray-700 hover:text-indigo-600">Features</a>
+                <a href="#pricing" class="block py-2 text-gray-700 hover:text-indigo-600">Pricing</a>
+                <a href="#demo" class="block py-2 text-gray-700 hover:text-indigo-600">Demo</a>
+                <a href="login.html" class="block py-2 text-gray-700 hover:text-indigo-600">Login</a>
+                <a href="dashboard.html" class="block py-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-center">Try for Free</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex items-center justify-center hero-gradient pt-16">
+        <div id="vanta-bg" class="absolute inset-0"></div>
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+                Stop Juggling Apps.<br>
+                <span class="text-indigo-600">Start Growing Your Business.</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                Invoicify Now brings your invoicing, customers, inventory, and analytics into one smart, simple platform. Ditch the spreadsheets and chaos for good.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+                <a href="dashboard.html" class="bg-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-700 transition-colors shadow-lg">
+                    Start Your Free 30-Day Trial
+                </a>
+                <a href="#demo" class="border-2 border-indigo-600 text-indigo-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-600 hover:text-white transition-colors">
+                    View Demo
+                </a>
+            </div>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-gray-500 mb-8">
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                    No credit card required
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                    Cancel anytime
+                </div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 max-w-2xl mx-auto shadow-xl">
+                <p class="text-lg font-semibold text-gray-800">
+                    Trusted by over <span class="stats-counter" data-target="500">0</span>+ businesses to manage ₹<span class="stats-counter" data-target="50">0</span>Cr+ in revenue.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Everything You Need, All in One Place</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Streamline your business operations with our comprehensive suite of tools designed for Indian businesses.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                    <div class="w-16 h-16 bg-indigo-100 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-receipt text-2xl text-indigo-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Effortless Invoicing 🧾</h3>
+                    <p class="text-gray-600 mb-4">Create and send professional, GST-compliant invoices in seconds. Track payments and send automatic reminders so you get paid faster.</p>
+                    <a href="#" class="text-indigo-600 font-medium hover:text-indigo-700">Learn more →</a>
+                </div>
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                    <div class="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-users text-2xl text-purple-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Smarter Customer Management 👥</h3>
+                    <p class="text-gray-600 mb-4">Track purchase history, manage credit, and see all communication in one place to build lasting relationships.</p>
+                    <a href="#" class="text-purple-600 font-medium hover:text-purple-700">Learn more →</a>
+                </div>
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                    <div class="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-boxes text-2xl text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Automated Inventory 📦</h3>
+                    <p class="text-gray-600 mb-4">Get real-time stock levels, automated low-stock alerts, and manage suppliers with ease.</p>
+                    <a href="#" class="text-green-600 font-medium hover:text-green-700">Learn more →</a>
+                </div>
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                    <div class="w-16 h-16 bg-orange-100 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-chart-line text-2xl text-orange-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Instant Business Insights 📈</h3>
+                    <p class="text-gray-600 mb-4">Make smarter decisions with real-time dashboard showing revenue trends and business performance.</p>
+                    <a href="#" class="text-orange-600 font-medium hover:text-orange-700">Learn more →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Demo Section -->
+    <section id="demo" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">See It In Action</h2>
+                <p class="text-xl text-gray-600">Experience how Invoicify Now transforms your business operations</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1">
+                    <div class="space-y-4">
+                        <button class="demo-btn w-full text-left p-4 rounded-lg bg-indigo-600 text-white shadow-lg" data-target="invoices">
+                            <h3 class="font-semibold mb-2">Create Professional Invoices</h3>
+                            <p class="text-sm opacity-90">Our intuitive invoice creator makes billing a breeze. Add your logo, calculate GST automatically, and send directly to your customer's email.</p>
+                        </button>
+                        <button class="demo-btn w-full text-left p-4 rounded-lg bg-white text-gray-700 shadow-md hover:shadow-lg transition-shadow" data-target="customers">
+                            <h3 class="font-semibold mb-2">Manage Customers with a Click</h3>
+                            <p class="text-sm text-gray-600">Get a complete 360° view of every customer. See their entire sales history, outstanding payments, and communication logs.</p>
+                        </button>
+                        <button class="demo-btn w-full text-left p-4 rounded-lg bg-white text-gray-700 shadow-md hover:shadow-lg transition-shadow" data-target="analytics">
+                            <h3 class="font-semibold mb-2">Track Your Business Health</h3>
+                            <p class="text-sm text-gray-600">Make smarter decisions with data. Your dashboard visualizes key metrics like monthly revenue and payment statuses in real-time.</p>
+                        </button>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="interactive-demo bg-white rounded-2xl shadow-xl p-8">
+                        <div id="invoices" class="demo-content active">
+                            <img src="https://images.unsplash.com/photo-1554224155-8d044ab0a5a5?w=800&h=400&fit=crop" alt="Invoice Creation Demo" class="w-full rounded-lg shadow-md mb-6">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4">Professional Invoice Creation</h3>
+                            <p class="text-gray-600 mb-4">Create beautiful, GST-compliant invoices in seconds. Our smart system automatically calculates taxes, applies discounts, and generates professional PDFs ready for sending.</p>
+                            <ul class="space-y-2 text-gray-600">
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Automatic GST calculations</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Customizable templates with your branding</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Email integration with delivery tracking</li>
+                            </ul>
+                        </div>
+                        <div id="customers" class="demo-content">
+                            <img src="https://images.unsplash.com/photo-1556155092-490a1ba16284?w=800&h=400&fit=crop" alt="Customer Management Demo" class="w-full rounded-lg shadow-md mb-6">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4">Complete Customer Management</h3>
+                            <p class="text-gray-600 mb-4">Build stronger relationships with comprehensive customer profiles. Track purchase history, manage credit limits, and maintain all communications in one place.</p>
+                            <ul class="space-y-2 text-gray-600">
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>360° customer view with purchase history</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Credit limit management and tracking</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Automated payment reminders</li>
+                            </ul>
+                        </div>
+                        <div id="analytics" class="demo-content">
+                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=400&fit=crop" alt="Analytics Dashboard Demo" class="w-full rounded-lg shadow-md mb-6">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4">Real-time Business Analytics</h3>
+                            <p class="text-gray-600 mb-4">Make data-driven decisions with comprehensive analytics. Track revenue trends, identify your best customers, and monitor business health at a glance.</p>
+                            <ul class="space-y-2 text-gray-600">
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Interactive dashboards with key metrics</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Revenue and expense trend analysis</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Customer lifetime value tracking</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Why Business Owners Love Invoicify Now</h2>
+                <p class="text-xl text-gray-600">Join hundreds of satisfied business owners who've transformed their operations</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="testimonial-card p-8 rounded-2xl shadow-lg">
+                    <div class="flex text-yellow-400 mb-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-gray-700 mb-6 italic">"Invoicify Now replaced three different apps for us. Our invoicing and inventory are finally in sync, and it has saved us at least 10 hours a week. A total game-changer!"</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
+                            <span class="font-bold text-indigo-600">RP</span>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Rohan Patel</h4>
+                            <p class="text-gray-600">Owner of PrintWorks Co.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card p-8 rounded-2xl shadow-lg">
+                    <div class="flex text-yellow-400 mb-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-gray-700 mb-6 italic">"As a retailer, managing GST and stock levels was a nightmare. This platform automated everything. The reporting is fantastic and helps me understand what's actually selling."</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+                            <span class="font-bold text-purple-600">PS</span>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Priya Singh</h4>
+                            <p class="text-gray-600">Founder of The Urban Store</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card p-8 rounded-2xl shadow-lg">
+                    <div class="flex text-yellow-400 mb-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-gray-700 mb-6 italic">"The attendance system is brilliant! Our staff can clock in with QR codes, and the automatic late tracking has improved punctuality significantly. Highly recommended!"</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                            <span class="font-bold text-green-600">AK</span>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Arjun Kumar</h4>
+                            <p class="text-gray-600">Manager at TechSolutions Pvt Ltd</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section class="py-20 bg-indigo-600">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Ready to Transform Your Business?</h2>
+            <p class="text-xl text-indigo-100 mb-8">Join hundreds of businesses streamlining their operations. Your 30-day free trial is just a click away.</p>
+            <a href="dashboard.html" class="bg-white text-indigo-600 px-12 py-4 rounded-lg text-xl font-bold hover:bg-gray-100 transition-colors shadow-lg inline-block">
+                Start My Free Trial Now
+            </a>
+            <p class="text-indigo-100 mt-4 text-sm">No credit card required. Full access to all features. Cancel anytime.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="md:col-span-1">
+                    <h3 class="text-2xl font-bold text-indigo-400 mb-4">invoicify now</h3>
+                    <p class="text-gray-400">Complete business management for modern enterprises.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Product</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#features" class="hover:text-white transition-colors">Features</a></li>
+                        <li><a href="#pricing" class="hover:text-white transition-colors">Pricing</a></li>
+                        <li><a href="#demo" class="hover:text-white transition-colors">Demo</a></li>
+                        <li><a href="login.html" class="hover:text-white transition-colors">Login</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Company</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Contact</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Support</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Legal</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 Invoicify Now. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Vanta.js background
+        VANTA.BIRDS({
+            el: "#vanta-bg",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            backgroundColor: 0xf8fafc,
+            color1: 0x6366f1,
+            color2: 0x8b5cf6,
+            birdSize: 1.20,
+            wingSpan: 25.00,
+            speedLimit: 5.00,
+            separation: 20.00,
+            alignment: 20.00,
+            cohesion: 20.00,
+            quantity: 3.00
+        });
+
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+
+        // Interactive demo functionality
+        document.querySelectorAll('.demo-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const target = this.dataset.target;
+                
+                // Update button states
+                document.querySelectorAll('.demo-btn').forEach(b => {
+                    b.classList.remove('bg-indigo-600', 'text-white');
+                    b.classList.add('bg-white', 'text-gray-700');
+                });
+                this.classList.remove('bg-white', 'text-gray-700');
+                this.classList.add('bg-indigo-600', 'text-white');
+                
+                // Update content
+                document.querySelectorAll('.demo-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(target).classList.add('active');
+            });
+        });
+
+        // Animated counters
+        function animateCounter(element) {
+            const target = parseInt(element.dataset.target);
+            const duration = 2000;
+            const start = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - start;
+                const progress = Math.min(elapsed / duration, 1);
+                const current = Math.floor(progress * target);
+                element.textContent = current;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+
+        // Intersection Observer for animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const counters = entry.target.querySelectorAll('.stats-counter');
+                    counters.forEach(counter => {
+                        if (!counter.classList.contains('animated')) {
+                            counter.classList.add('animated');
+                            animateCounter(counter);
+                        }
+                    });
+                }
+            });
+        });
+
+        // Observe stats section
+        const statsSection = document.querySelector('.stats-counter').closest('div');
+        if (statsSection) {
+            observer.observe(statsSection);
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

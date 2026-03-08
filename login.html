@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - invoicify now</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .login-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .form-container { backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.95); }
+        .role-card { transition: all 0.3s ease; cursor: pointer; }
+        .role-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .role-card.selected { border-color: #6366f1; background: #f0f4ff; }
+        .password-toggle { cursor: pointer; }
+        .demo-credentials { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); }
+    </style>
+</head>
+<body class="login-gradient min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-6xl mx-auto">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">invoicify now</h1>
+            <p class="text-indigo-100">Complete Business Management Platform</p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Login Form -->
+            <div class="form-container rounded-2xl p-8 shadow-2xl">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+                    <p class="text-gray-600">Sign in to your account to continue</p>
+                </div>
+
+                <!-- Role Selection -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">Select Your Role</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="role-card border-2 border-gray-200 rounded-lg p-4 text-center" data-role="admin">
+                            <i class="fas fa-crown text-2xl text-yellow-500 mb-2"></i>
+                            <h3 class="font-semibold text-gray-900">Admin</h3>
+                            <p class="text-xs text-gray-600">Full system access</p>
+                        </div>
+                        <div class="role-card border-2 border-gray-200 rounded-lg p-4 text-center" data-role="cashier">
+                            <i class="fas fa-cash-register text-2xl text-blue-500 mb-2"></i>
+                            <h3 class="font-semibold text-gray-900">Cashier</h3>
+                            <p class="text-xs text-gray-600">Invoice & customer management</p>
+                        </div>
+                        <div class="role-card border-2 border-gray-200 rounded-lg p-4 text-center" data-role="inventory">
+                            <i class="fas fa-boxes text-2xl text-green-500 mb-2"></i>
+                            <h3 class="font-semibold text-gray-900">Inventory Manager</h3>
+                            <p class="text-xs text-gray-600">Stock & supplier management</p>
+                        </div>
+                        <div class="role-card border-2 border-gray-200 rounded-lg p-4 text-center" data-role="employee">
+                            <i class="fas fa-user text-2xl text-purple-500 mb-2"></i>
+                            <h3 class="font-semibold text-gray-900">Employee</h3>
+                            <p class="text-xs text-gray-600">Attendance & personal access</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="loginForm" class="space-y-6">
+                    <div>
+                        <label for="username" class="block text-sm font-semibold text-gray-700 mb-2">Username</label>
+                        <div class="relative">
+                            <i class="fas fa-user absolute left-3 top-3 text-gray-400"></i>
+                            <input type="text" id="username" name="username" required 
+                                   class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                   placeholder="Enter your username">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                        <div class="relative">
+                            <i class="fas fa-lock absolute left-3 top-3 text-gray-400"></i>
+                            <input type="password" id="password" name="password" required 
+                                   class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                   placeholder="Enter your password">
+                            <i class="fas fa-eye password-toggle absolute right-4 top-3 text-gray-400" id="togglePassword"></i>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                            <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                        </label>
+                        <a href="#" class="text-sm text-indigo-600 hover:text-indigo-500">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-lg">
+                        Sign In
+                    </button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-gray-600">
+                        Don't have an account? 
+                        <a href="dashboard.html" class="text-indigo-600 hover:text-indigo-500 font-semibold">Start Free Trial</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Demo Credentials -->
+            <div class="form-container rounded-2xl p-8 shadow-2xl">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Try Demo Access</h2>
+                    <p class="text-gray-600">Use these credentials to explore different roles</p>
+                </div>
+
+                <div class="demo-credentials rounded-xl p-6 mb-6">
+                    <h3 class="font-semibold text-gray-900 mb-4">Available Demo Accounts</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
+                            <div>
+                                <span class="font-medium text-gray-900">Admin</span>
+                                <span class="text-xs text-gray-500 ml-2">Full access</span>
+                            </div>
+                            <button class="demo-login text-indigo-600 hover:text-indigo-500 font-medium text-sm" 
+                                    data-username="admin" data-password="admin123" data-role="admin">
+                                Use Demo
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
+                            <div>
+                                <span class="font-medium text-gray-900">Cashier</span>
+                                <span class="text-xs text-gray-500 ml-2">Invoice & customers</span>
+                            </div>
+                            <button class="demo-login text-indigo-600 hover:text-indigo-500 font-medium text-sm" 
+                                    data-username="cashier1" data-password="cash123" data-role="cashier">
+                                Use Demo
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
+                            <div>
+                                <span class="font-medium text-gray-900">Inventory Manager</span>
+                                <span class="text-xs text-gray-500 ml-2">Stock management</span>
+                            </div>
+                            <button class="demo-login text-indigo-600 hover:text-indigo-500 font-medium text-sm" 
+                                    data-username="inventory1" data-password="inv123" data-role="inventory">
+                                Use Demo
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
+                            <div>
+                                <span class="font-medium text-gray-900">Employee</span>
+                                <span class="text-xs text-gray-500 ml-2">Attendance only</span>
+                            </div>
+                            <button class="demo-login text-indigo-600 hover:text-indigo-500 font-medium text-sm" 
+                                    data-username="emp001" data-password="emp123" data-role="employee">
+                                Use Demo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-yellow-500 mt-1 mr-2"></i>
+                        <div>
+                            <h4 class="font-semibold text-yellow-800 mb-1">Demo Notice</h4>
+                            <p class="text-sm text-yellow-700">These are demo accounts for testing purposes. Data is reset daily. Use any role to explore the platform's capabilities.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Role selection
+        let selectedRole = '';
+        document.querySelectorAll('.role-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedRole = this.dataset.role;
+            });
+        });
+
+        // Password toggle
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const password = document.getElementById('password');
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+
+        // Demo login buttons
+        document.querySelectorAll('.demo-login').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const username = this.dataset.username;
+                const password = this.dataset.password;
+                const role = this.dataset.role;
+                
+                document.getElementById('username').value = username;
+                document.getElementById('password').value = password;
+                
+                // Select the role card
+                document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+                document.querySelector(`[data-role="${role}"]`).classList.add('selected');
+                selectedRole = role;
+                
+                // Auto submit after a short delay
+                setTimeout(() => {
+                    document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+                }, 500);
+            });
+        });
+
+        // Form submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!selectedRole) {
+                alert('Please select your role to continue.');
+                return;
+            }
+            
+            if (!username || !password) {
+                alert('Please enter both username and password.');
+                return;
+            }
+            
+            // Simulate authentication
+            const demoUsers = {
+                'admin': { password: 'admin123', role: 'admin', name: 'Admin User' },
+                'cashier1': { password: 'cash123', role: 'cashier', name: 'Rajesh Sharma' },
+                'inventory1': { password: 'inv123', role: 'inventory', name: 'Priya Patel' },
+                'emp001': { password: 'emp123', role: 'employee', name: 'Amit Kumar' }
+            };
+            
+            const user = demoUsers[username];
+            if (user && user.password === password && user.role === selectedRole) {
+                // Store user session
+                localStorage.setItem('invoicifyUser', JSON.stringify({
+                    username: username,
+                    name: user.name,
+                    role: selectedRole,
+                    loginTime: new Date().toISOString()
+                }));
+                
+                // Redirect based on role
+                switch(selectedRole) {
+                    case 'admin':
+                        window.location.href = 'dashboard.html';
+                        break;
+                    case 'cashier':
+                        window.location.href = 'invoices.html';
+                        break;
+                    case 'inventory':
+                        window.location.href = 'inventory.html';
+                        break;
+                    case 'employee':
+                        window.location.href = 'attendance.html';
+                        break;
+                    default:
+                        window.location.href = 'dashboard.html';
+                }
+            } else {
+                alert('Invalid credentials or role mismatch. Please try again or use the demo accounts provided.');
+            }
+        });
+
+        // Auto-select admin role by default
+        document.querySelector('[data-role="admin"]').click();
+    </script>
+</body>
+</html>

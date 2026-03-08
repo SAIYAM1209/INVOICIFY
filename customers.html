@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers - invoicify now</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar { transition: all 0.3s ease; }
+        .sidebar.collapsed { transform: translateX(-100%); }
+        .main-content { transition: all 0.3s ease; }
+        .main-content.expanded { margin-left: 0; }
+        .customer-card { transition: all 0.3s ease; }
+        .customer-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: white; border-radius: 1rem; padding: 2rem; max-width: 90%; max-height: 90%; overflow-y: auto; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <button id="sidebar-toggle" class="text-gray-500 hover:text-gray-700 mr-4">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-2xl font-bold text-indigo-600">invoicify now</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button class="text-gray-500 hover:text-gray-700 relative">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <button id="user-menu" class="flex items-center space-x-2 text-gray-700 hover:text-gray-900">
+                            <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-indigo-600 text-sm"></i>
+                            </div>
+                            <span id="user-name" class="font-medium">Admin User</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2">
+                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</a>
+                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Settings</a>
+                            <hr class="my-2">
+                            <a href="login.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar fixed left-0 top-16 h-full w-64 bg-white shadow-lg z-30">
+        <div class="p-4">
+            <div class="mb-6">
+                <div class="flex items-center space-x-3 p-3 bg-indigo-50 rounded-lg">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div>
+                        <h3 id="sidebar-user-name" class="font-semibold text-gray-900">Admin User</h3>
+                        <p id="sidebar-user-role" class="text-xs text-gray-500">Administrator</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="dashboard.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <div id="admin-menu" class="space-y-2">
+                    <a href="invoices.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-receipt"></i>
+                        <span>Invoices</span>
+                    </a>
+                    <a href="customers.html" class="flex items-center space-x-3 p-3 bg-indigo-100 text-indigo-700 rounded-lg">
+                        <i class="fas fa-users"></i>
+                        <span>Customers</span>
+                    </a>
+                    <a href="inventory.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-boxes"></i>
+                        <span>Inventory</span>
+                    </a>
+                    <a href="employees.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-users-cog"></i>
+                        <span>Employees</span>
+                    </a>
+                    <a href="attendance.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-clock"></i>
+                        <span>Attendance</span>
+                    </a>
+                    <a href="activity-log.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-history"></i>
+                        <span>Activity Log</span>
+                    </a>
+                </div>
+                <div id="cashier-menu" class="space-y-2 hidden">
+                    <a href="invoices.html" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-receipt"></i>
+                        <span>Invoices</span>
+                    </a>
+                    <a href="customers.html" class="flex items-center space-x-3 p-3 bg-indigo-100 text-indigo-700 rounded-lg">
+                        <i class="fas fa-users"></i>
+                        <span>Customers</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" class="main-content pt-16 ml-64">
+        <div class="p-6">
+            <!-- Page Header -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Customer Management</h1>
+                    <p class="text-gray-600">Manage your customer relationships and contact information</p>
+                </div>
+                <button id="add-customer-btn" class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-lg">
+                    <i class="fas fa-plus mr-2"></i>Add New Customer
+                </button>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="bg-white rounded-xl p-6 shadow-lg mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Search Customers</label>
+                        <input type="text" id="search-customer" placeholder="Search by name, email, or phone..." 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Filter by Total Spent</label>
+                        <select id="spending-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <option value="">All Customers</option>
+                            <option value="high">High Value (₹50,000+)</option>
+                            <option value="medium">Medium Value (₹10,000-₹50,000)</option>
+                            <option value="low">Low Value (Below ₹10,000)</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button id="clear-filters" class="w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors">
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customers Grid -->
+            <div id="customers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Customers will be dynamically loaded here -->
+            </div>
+
+            <!-- Customer Statistics -->
+            <div class="mt-8 bg-white rounded-xl p-6 shadow-lg">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Customer Statistics</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-indigo-600" id="total-customers">0</div>
+                        <div class="text-sm text-gray-600">Total Customers</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-600" id="active-customers">0</div>
+                        <div class="text-sm text-gray-600">Active This Month</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-purple-600" id="total-revenue">₹0</div>
+                        <div class="text-sm text-gray-600">Total Revenue</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-orange-600" id="avg-order">₹0</div>
+                        <div class="text-sm text-gray-600">Average Order Value</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Customer Modal -->
+    <div id="customer-modal" class="modal">
+        <div class="modal-content w-full max-w-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modal-title" class="text-2xl font-bold text-gray-900">Add New Customer</h2>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <form id="customer-form" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Company Name *</label>
+                        <input type="text" id="company-name" required 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                               placeholder="Enter company name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Contact Person</label>
+                        <input type="text" id="contact-person" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                               placeholder="Enter contact person name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                        <input type="email" id="email" required 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                               placeholder="Enter email address">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                        <input type="tel" id="phone" required 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                               placeholder="Enter phone number">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">GST Number</label>
+                    <input type="text" id="gst-number" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                           placeholder="Enter GST number (e.g., 27AABCU9603R1ZX)">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Billing Address</label>
+                        <textarea id="billing-address" rows="3" 
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                  placeholder="Enter billing address"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Shipping Address</label>
+                        <textarea id="shipping-address" rows="3" 
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                  placeholder="Enter shipping address"></textarea>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                    <textarea id="notes" rows="3" 
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                              placeholder="Any additional notes about this customer"></textarea>
+                </div>
+
+                <div class="flex justify-end space-x-4">
+                    <button type="button" id="cancel-btn" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                        Save Customer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        const user = JSON.parse(localStorage.getItem('invoicifyUser'));
+        if (!user) {
+            window.location.href = 'login.html';
+        }
+
+        // Update user info
+        document.getElementById('user-name').textContent = user.name;
+        document.getElementById('sidebar-user-name').textContent = user.name;
+        document.getElementById('sidebar-user-role').textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+
+        // Sample data
+        let customers = JSON.parse(localStorage.getItem('customers') || '[]');
+
+        // Initialize sample data if empty
+        if (customers.length === 0) {
+            customers = [
+                {
+                    id: 1,
+                    companyName: 'ABC Corporation',
+                    contactPerson: 'Rajesh Sharma',
+                    email: 'contact@abccorp.com',
+                    phone: '9876543210',
+                    gstNumber: '27AABCU9603R1ZX',
+                    billingAddress: '123 Business Park, Mumbai, Maharashtra 400001',
+                    shippingAddress: '123 Business Park, Mumbai, Maharashtra 400001',
+                    notes: 'Preferred customer with good payment history',
+                    totalSpent: 125000,
+                    lastPurchase: '2025-10-15',
+                    status: 'active'
+                },
+                {
+                    id: 2,
+                    companyName: 'TechStart Pvt Ltd',
+                    contactPerson: 'Priya Patel',
+                    email: 'business@techstart.com',
+                    phone: '9123456789',
+                    gstNumber: '24AAACT1234E1Z5',
+                    billingAddress: '456 Tech Hub, Bangalore, Karnataka 560001',
+                    shippingAddress: '456 Tech Hub, Bangalore, Karnataka 560001',
+                    notes: 'Startup with growth potential',
+                    totalSpent: 45000,
+                    lastPurchase: '2025-10-10',
+                    status: 'active'
+                },
+                {
+                    id: 3,
+                    companyName: 'Global Industries',
+                    contactPerson: 'Amit Kumar',
+                    email: 'procurement@globalind.com',
+                    phone: '9988776655',
+                    gstNumber: '19AABCG1234H1Z9',
+                    billingAddress: '789 Industrial Area, Delhi, Delhi 110001',
+                    shippingAddress: '789 Industrial Area, Delhi, Delhi 110001',
+                    notes: 'Large enterprise with bulk orders',
+                    totalSpent: 280000,
+                    lastPurchase: '2025-09-28',
+                    status: 'active'
+                }
+            ];
+            localStorage.setItem('customers', JSON.stringify(customers));
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR'
+            }).format(amount);
+        }
+
+        // Render customers
+        function renderCustomers(customersToRender = customers) {
+            const grid = document.getElementById('customers-grid');
+            grid.innerHTML = '';
+
+            customersToRender.forEach(customer => {
+                const customerCard = document.createElement('div');
+                customerCard.className = 'customer-card bg-white rounded-xl p-6 shadow-lg';
+                customerCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">${customer.companyName}</h3>
+                            <p class="text-sm text-gray-600">${customer.contactPerson}</p>
+                        </div>
+                        <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                            <span class="text-lg font-bold text-indigo-600">${customer.companyName.charAt(0)}</span>
+                        </div>
+                    </div>
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-envelope mr-2 text-gray-400"></i>
+                            ${customer.email}
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-phone mr-2 text-gray-400"></i>
+                            ${customer.phone}
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-rupee-sign mr-2 text-gray-400"></i>
+                            Total Spent: ${formatCurrency(customer.totalSpent)}
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-calendar mr-2 text-gray-400"></i>
+                            Last Purchase: ${new Date(customer.lastPurchase).toLocaleDateString('en-IN')}
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="viewCustomer(${customer.id})" class="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-eye mr-1"></i>View
+                        </button>
+                        <button onclick="editCustomer(${customer.id})" class="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors">
+                            <i class="fas fa-edit mr-1"></i>Edit
+                        </button>
+                        <button onclick="createInvoice(${customer.id})" class="flex-1 bg-purple-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors">
+                            <i class="fas fa-receipt mr-1"></i>Invoice
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(customerCard);
+            });
+        }
+
+        // Filter customers
+        function filterCustomers() {
+            const searchTerm = document.getElementById('search-customer').value.toLowerCase();
+            const spendingFilter = document.getElementById('spending-filter').value;
+
+            let filtered = customers.filter(customer => {
+                const matchesSearch = customer.companyName.toLowerCase().includes(searchTerm) || 
+                                    customer.contactPerson.toLowerCase().includes(searchTerm) ||
+                                    customer.email.toLowerCase().includes(searchTerm) ||
+                                    customer.phone.includes(searchTerm);
+                
+                let matchesSpending = true;
+                if (spendingFilter === 'high') {
+                    matchesSpending = customer.totalSpent >= 50000;
+                } else if (spendingFilter === 'medium') {
+                    matchesSpending = customer.totalSpent >= 10000 && customer.totalSpent < 50000;
+                } else if (spendingFilter === 'low') {
+                    matchesSpending = customer.totalSpent < 10000;
+                }
+                
+                return matchesSearch && matchesSpending;
+            });
+
+            renderCustomers(filtered);
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const totalCustomers = customers.length;
+            const activeCustomers = customers.filter(c => new Date(c.lastPurchase) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length;
+            const totalRevenue = customers.reduce((sum, c) => sum + c.totalSpent, 0);
+            const avgOrder = totalRevenue / Math.max(totalCustomers, 1);
+
+            document.getElementById('total-customers').textContent = totalCustomers;
+            document.getElementById('active-customers').textContent = activeCustomers;
+            document.getElementById('total-revenue').textContent = formatCurrency(totalRevenue);
+            document.getElementById('avg-order').textContent = formatCurrency(avgOrder);
+        }
+
+        // Event listeners
+        document.getElementById('search-customer').addEventListener('input', filterCustomers);
+        document.getElementById('spending-filter').addEventListener('change', filterCustomers);
+        document.getElementById('clear-filters').addEventListener('click', function() {
+            document.getElementById('search-customer').value = '';
+            document.getElementById('spending-filter').value = '';
+            renderCustomers();
+        });
+
+        // Modal functionality
+        const modal = document.getElementById('customer-modal');
+        const closeModal = document.getElementById('close-modal');
+        const cancelBtn = document.getElementById('cancel-btn');
+
+        document.getElementById('add-customer-btn').addEventListener('click', function() {
+            document.getElementById('modal-title').textContent = 'Add New Customer';
+            document.getElementById('customer-form').reset();
+            modal.classList.add('show');
+        });
+
+        closeModal.addEventListener('click', function() {
+            modal.classList.remove('show');
+        });
+
+        cancelBtn.addEventListener('click', function() {
+            modal.classList.remove('show');
+        });
+
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.remove('show');
+            }
+        });
+
+        // Customer actions
+        function viewCustomer(id) {
+            const customer = customers.find(c => c.id === id);
+            if (customer) {
+                alert(`Customer Details:\n\nCompany: ${customer.companyName}\nContact: ${customer.contactPerson}\nEmail: ${customer.email}\nPhone: ${customer.phone}\nGST: ${customer.gstNumber}\nTotal Spent: ${formatCurrency(customer.totalSpent)}`);
+            }
+        }
+
+        function editCustomer(id) {
+            const customer = customers.find(c => c.id === id);
+            if (customer) {
+                document.getElementById('modal-title').textContent = 'Edit Customer';
+                document.getElementById('company-name').value = customer.companyName;
+                document.getElementById('contact-person').value = customer.contactPerson;
+                document.getElementById('email').value = customer.email;
+                document.getElementById('phone').value = customer.phone;
+                document.getElementById('gst-number').value = customer.gstNumber;
+                document.getElementById('billing-address').value = customer.billingAddress;
+                document.getElementById('shipping-address').value = customer.shippingAddress;
+                document.getElementById('notes').value = customer.notes;
+                
+                modal.classList.add('show');
+                // Store the editing customer ID
+                modal.dataset.editingId = id;
+            }
+        }
+
+        function createInvoice(customerId) {
+            // Redirect to invoices page with customer pre-selected
+            localStorage.setItem('selectedCustomer', customerId);
+            window.location.href = 'invoices.html';
+        }
+
+        // Form submission
+        document.getElementById('customer-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const customerData = {
+                companyName: document.getElementById('company-name').value,
+                contactPerson: document.getElementById('contact-person').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                gstNumber: document.getElementById('gst-number').value,
+                billingAddress: document.getElementById('billing-address').value,
+                shippingAddress: document.getElementById('shipping-address').value,
+                notes: document.getElementById('notes').value,
+                totalSpent: 0,
+                lastPurchase: new Date().toISOString().split('T')[0],
+                status: 'active'
+            };
+
+            if (modal.dataset.editingId) {
+                // Edit existing customer
+                const id = parseInt(modal.dataset.editingId);
+                const index = customers.findIndex(c => c.id === id);
+                if (index !== -1) {
+                    customers[index] = { ...customers[index], ...customerData };
+                    logActivity('customer_updated', `Updated customer ${customerData.companyName}`);
+                }
+                delete modal.dataset.editingId;
+            } else {
+                // Add new customer
+                customerData.id = Math.max(...customers.map(c => c.id), 0) + 1;
+                customers.push(customerData);
+                logActivity('customer_created', `Created new customer ${customerData.companyName}`);
+            }
+
+            localStorage.setItem('customers', JSON.stringify(customers));
+            modal.classList.remove('show');
+            renderCustomers();
+            updateStatistics();
+        });
+
+        // Log activity
+        function logActivity(action, details) {
+            const activities = JSON.parse(localStorage.getItem('activities') || '[]');
+            activities.unshift({
+                action: action,
+                details: details,
+                timestamp: new Date().toISOString(),
+                user: user.username
+            });
+            localStorage.setItem('activities', JSON.stringify(activities.slice(0, 50)));
+        }
+
+        // Initialize
+        renderCustomers();
+        updateStatistics();
+
+        // Sidebar toggle
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+    </script>
+</body>
+</html>
